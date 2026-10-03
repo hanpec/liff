@@ -3,21 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFF プロフィール取得</title>
+    <title>LIFF プロフィール取得＆メッセージ送信</title>
     <style>
         body { font-family: sans-serif; text-align: center; padding: 20px; }
         img { width: 100px; height: 100px; border-radius: 50%; margin-top: 10px; }
         .info { margin-top: 15px; word-break: break-all; }
+        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; background-color: #06c755; color: white; border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <h1>LIFF ユーザー情報</h1>
+    <h1>LIFF アプリ</h1>
     <p id="status">初期化中...</p>
     
     <div id="profile-container" style="display: none;">
         <img id="pictureUrl" src="" alt="プロフィール画像">
         <div class="info"><strong>表示名:</strong> <span id="displayName"></span></div>
         <div class="info"><strong>ユーザーID:</strong> <span id="userId"></span></div>
+        
+        <!-- メッセージ送信ボタンを追加 -->
+        <div>
+            <button id="sendBtn">トークにメッセージを送る</button>
+        </div>
     </div>
 
     <!-- LINE Front-end Framework (LIFF) SDKの読み込み -->
@@ -54,6 +60,27 @@
         })
         .catch((err) => {
             document.getElementById('status').innerText = `初期化失敗: ${err}`;
+        });
+
+        // メッセージ送信ボタンがクリックされたときの処理
+        document.getElementById('sendBtn').addEventListener('click', () => {
+            if (!liff.isInClient()) {
+                alert('この機能はLINEアプリ内でのみ利用できます。');
+                return;
+            }
+
+            liff.sendMessages([
+                {
+                    type: 'text',
+                    text: 'LIFFアプリからメッセージを送信しました！'
+                }
+            ])
+            .then(() => {
+                alert('メッセージが送信されました！');
+            })
+            .catch((err) => {
+                alert(`メッセージ送信失敗: ${JSON.stringify(err)}`);
+            });
         });
     </script>
 </body>
