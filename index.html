@@ -3,17 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFF テストアプリ</title>
+    <title>LIFF プロフィール取得</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; }
+        img { width: 100px; height: 100px; border-radius: 50%; margin-top: 10px; }
+        .info { margin-top: 15px; word-break: break-all; }
+    </style>
 </head>
 <body>
-    <h1>LIFF 動作確認</h1>
+    <h1>LIFF ユーザー情報</h1>
     <p id="status">初期化中...</p>
-    <p id="user-info"></p>
+    
+    <div id="profile-container" style="display: none;">
+        <img id="pictureUrl" src="" alt="プロフィール画像">
+        <div class="info"><strong>表示名:</strong> <span id="displayName"></span></div>
+        <div class="info"><strong>ユーザーID:</strong> <span id="userId"></span></div>
+    </div>
 
     <!-- LINE Front-end Framework (LIFF) SDKの読み込み -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        // あなたのLIFF IDに書き換えてください
         const MY_LIFF_ID = "2011848219-ZDPzGKqJ";
 
         liff.init({
@@ -22,19 +31,25 @@
         .then(() => {
             document.getElementById('status').innerText = 'LIFF初期化成功！';
             
-            // ログイン済みの場合はユーザー情報を取得する例
             if (liff.isLoggedIn()) {
                 liff.getProfile()
                     .then(profile => {
-                        document.getElementById('user-info').innerText = `ログイン中ユーザー: ${profile.displayName}さん`;
+                        // プロフィール情報をHTML要素にセット
+                        document.getElementById('displayName').innerText = profile.displayName;
+                        document.getElementById('userId').innerText = profile.userId;
+                        if (profile.pictureUrl) {
+                            document.getElementById('pictureUrl').src = profile.pictureUrl;
+                        }
+                        // プロフィール表示エリアを表示する
+                        document.getElementById('profile-container').style.display = 'block';
                     })
                     .catch(err => {
                         console.error('プロフィールの取得に失敗しました', err);
+                        document.getElementById('status').innerText = `プロフィール取得失敗: ${err}`;
                     });
             } else {
-                // 未ログインの場合はログインを促す
-                // liff.login();
-                document.getElementById('user-info').innerText = 'ログインしていません。';
+                // 未ログインの場合はログインを実行
+                liff.login();
             }
         })
         .catch((err) => {
