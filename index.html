@@ -8,7 +8,9 @@
         body { font-family: sans-serif; text-align: center; padding: 20px; }
         img { width: 100px; height: 100px; border-radius: 50%; margin-top: 10px; }
         .info { margin-top: 15px; word-break: break-all; }
-        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; background-color: #06c755; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .input-area { margin-top: 20px; }
+        input[type="text"] { width: 80%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { margin-top: 15px; padding: 10px 20px; font-size: 16px; background-color: #06c755; color: white; border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -20,9 +22,12 @@
         <div class="info"><strong>表示名:</strong> <span id="displayName"></span></div>
         <div class="info"><strong>ユーザーID:</strong> <span id="userId"></span></div>
         
-        <!-- メッセージ送信ボタンを追加 -->
-        <div>
-            <button id="sendBtn">トークにメッセージを送る</button>
+        <!-- メッセージ入力欄と送信ボタンを追加 -->
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="送信するメッセージを入力..." value="LIFFアプリから送信テスト">
+            <div>
+                <button id="sendBtn">トークにメッセージを送る</button>
+            </div>
         </div>
     </div>
 
@@ -69,10 +74,16 @@
                 return;
             }
 
+            const textMessage = document.getElementById('messageInput').value;
+            if (!textMessage) {
+                alert('送信するメッセージを入力してください。');
+                return;
+            }
+
             liff.sendMessages([
                 {
                     type: 'text',
-                    text: 'LIFFアプリからメッセージを送信しました！'
+                    text: textMessage
                 }
             ])
             .then(() => {
