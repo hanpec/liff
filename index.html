@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIFF テストアプリ</title>
+</head>
+<body>
+    <h1>LIFF 動作確認</h1>
+    <p id="status">初期化中...</p>
+    <p id="user-info"></p>
+
+    <!-- LINE Front-end Framework (LIFF) SDKの読み込み -->
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script>
+        // あなたのLIFF IDに書き換えてください
+        const MY_LIFF_ID = "2011848219-ZDPzGKqJ";
+
+        liff.init({
+            liffId: MY_LIFF_ID
+        })
+        .then(() => {
+            document.getElementById('status').innerText = 'LIFF初期化成功！';
+            
+            // ログイン済みの場合はユーザー情報を取得する例
+            if (liff.isLoggedIn()) {
+                liff.getProfile()
+                    .then(profile => {
+                        document.getElementById('user-info').innerText = `ログイン中ユーザー: ${profile.displayName}さん`;
+                    })
+                    .catch(err => {
+                        console.error('プロフィールの取得に失敗しました', err);
+                    });
+            } else {
+                // 未ログインの場合はログインを促す
+                // liff.login();
+                document.getElementById('user-info').innerText = 'ログインしていません。';
+            }
+        })
+        .catch((err) => {
+            document.getElementById('status').innerText = `初期化失敗: ${err}`;
+        });
+    </script>
+</body>
+</html>
