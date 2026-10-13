@@ -1,368 +1,111 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFF プロフィール取得＆メッセージ送信</title>
-
-    <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-
-        img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin-top: 10px;
-        }
-
-        .info {
-            margin-top: 15px;
-            word-break: break-all;
-        }
-
-        .input-area {
-            margin-top: 20px;
-        }
-
-        input[type="text"] {
-            width: 80%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-
-        button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #06c755;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIFF プロフィール取得＆メッセージ送信</title>
+<style>
+  body { font-family: sans-serif; text-align: center; padding: 20px; }
+  img { width: 100px; height: 100px; border-radius: 50%; margin-top: 10px; }
+  .info { margin-top: 15px; word-break: break-all; }
+  .input-area { margin-top: 20px; }
+  input[type="text"] { width: 80%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+  button { margin-top: 15px; padding: 10px 20px; font-size: 16px; background-color: #06c755; color: white; border: none; border-radius: 5px; cursor: pointer; }
+</style>
 </head>
-
 <body>
 
-    <h1>LIFF アプリ</h1>
-
-    <p id="status">初期化中...</p>
-
-    <div id="profile-container" style="display: none;">
-
-        <img id="pictureUrl" src="" alt="プロフィール画像">
-
-        <div class="info">
-            <strong>表示名:</strong>
-            <span id="displayName"></span>
-        </div>
-
-        <div class="info">
-            <strong>ユーザーID:</strong>
-            <span id="userId"></span>
-        </div>
-
-        <!-- API登録結果 -->
-        <div class="info">
-            <strong>API登録:</strong>
-            <span id="apiStatus">未実行</span>
-        </div>
-
-        <!-- メッセージ入力欄 -->
-        <div class="input-area">
-
-            <input
-                type="text"
-                id="messageInput"
-                placeholder="送信するメッセージを入力..."
-                value="LIFFアプリから送信テスト"
-            >
-
-            <div>
-                <button id="sendBtn">
-                    トークにメッセージを送る
-                </button>
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- LINE Front-end Framework (LIFF) SDK -->
-    <script
-        charset="utf-8"
-        src="https://static.line-scdn.net/liff/edge/2/sdk.js">
-    </script>
-
-    <script>
-
-        const MY_LIFF_ID = "2011848219-ZDPzGKqJ";
-
-        // API GatewayのURL
-        const API_URL =
-            "https://l3ccco75yb.execute-api.ap-northeast-1.amazonaws.com/test/user";
-
-
-        /*
-         * LIFF初期化
-         */
-        liff.init({
-            liffId: MY_LIFF_ID
-        })
-
-        .then(() => {
-
-            document.getElementById('status').innerText =
-                'LIFF初期化成功！';
-
-
-            /*
-             * LINEログイン済みか確認
-             */
-            if (liff.isLoggedIn()) {
-
-                /*
-                 * LINEプロフィール取得
-                 */
-                liff.getProfile()
-
-                .then(profile => {
-
-                    /*
-                     * プロフィール情報を画面に表示
-                     */
-                    document.getElementById('displayName').innerText =
-                        profile.displayName;
-
-                    document.getElementById('userId').innerText =
-                        profile.userId;
-
-
-                    if (profile.pictureUrl) {
-
-                        document.getElementById('pictureUrl').src =
-                            profile.pictureUrl;
-
-                    }
-
-
-                    /*
-                     * プロフィール表示
-                     */
-                    document.getElementById('profile-container')
-                        .style.display = 'block';
-
-
-                    /*
-                     * API Gatewayへプロフィール情報を送信
-                     */
-                    registerUser(
-                        profile.userId,
-                        profile.displayName
-                    );
-
-                })
-
-                .catch(err => {
-
-                    console.error(
-                        'プロフィールの取得に失敗しました',
-                        err
-                    );
-
-                    document.getElementById('status').innerText =
-                        `プロフィール取得失敗: ${err}`;
-
-                });
-
-            }
-
-            else {
-
-                /*
-                 * 未ログインの場合はLINEログイン
-                 */
-                liff.login();
-
-            }
-
-        })
-
-        .catch(err => {
-
-            document.getElementById('status').innerText =
-                `初期化失敗: ${err}`;
-
-        });
-
-
-        /*
-         * API Gatewayへユーザー情報を登録
-         */
-        function registerUser(userId, displayName) {
-
-            const apiStatus =
-                document.getElementById('apiStatus');
-
-            apiStatus.innerText =
-                '登録中...';
-
-
-            fetch(API_URL, {
-
-                method: 'POST',
-
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-
-                body: JSON.stringify({
-
-                    userId: userId,
-
-                    displayName: displayName
-                    /*displayName: "テストユーザー"*/
-
-                })
-
-            })
-
-            .then(response => {
-
-                /*
-                 * HTTPステータスを確認
-                 */
-                if (!response.ok) {
-
-                    throw new Error(
-                        `HTTPエラー: ${response.status}`
-                    );
-
-                }
-
-                return response.json();
-
-            })
-
-            .then(result => {
-
-                console.log(
-                    'APIレスポンス:',
-                    result
-                );
-
-                /*
-                 * API Gatewayから返されたbodyを解析
-                 */
-                let body = result.body;
-
-                if (typeof body === 'string') {
-
-                    body = JSON.parse(body);
-
-                }
-
-
-                if (body.success) {
-
-                    apiStatus.innerText =
-                        '登録成功';
-
-                }
-
-                else {
-
-                    apiStatus.innerText =
-                        '登録失敗';
-
-                }
-
-            })
-
-            .catch(error => {
-
-                console.error(
-                    'API登録エラー:',
-                    error
-                );
-
-                apiStatus.innerText =
-                    `登録失敗: ${error.message}`;
-
-            });
-
-        }
-
-
-        /*
-         * メッセージ送信ボタン
-         */
-        document.getElementById('sendBtn')
-            .addEventListener('click', () => {
-
-                if (!liff.isInClient()) {
-
-                    alert(
-                        'この機能はLINEアプリ内でのみ利用できます。'
-                    );
-
-                    return;
-
-                }
-
-
-                const textMessage =
-                    document.getElementById('messageInput').value;
-
-
-                if (!textMessage) {
-
-                    alert(
-                        '送信するメッセージを入力してください。'
-                    );
-
-                    return;
-
-                }
-
-
-                liff.sendMessages([
-
-                    {
-                        type: 'text',
-                        text: textMessage
-                    }
-
-                ])
-
-                .then(() => {
-
-                    alert(
-                        'メッセージが送信されました！'
-                    );
-
-                })
-
-                .catch(err => {
-
-                    alert(
-                        `メッセージ送信失敗: ${JSON.stringify(err)}`
-                    );
-
-                });
-
-            });
-
-    </script>
+<h1>LIFF アプリ</h1>
+<p id="status">初期化中...</p>
+
+<div id="profile-container" style="display: none;">
+  <img id="pictureUrl" src="" alt="プロフィール画像">
+  <div class="info"><strong>表示名:</strong> <span id="displayName"></span></div>
+  <div class="info"><strong>ユーザーID:</strong> <span id="userId"></span></div>
+  <div class="info"><strong>API登録:</strong> <span id="apiStatus">未実行</span></div>
+  <div class="input-area">
+    <input type="text" id="messageInput" placeholder="送信するメッセージを入力..." value="LIFFアプリから送信テスト">
+    <div><button id="sendBtn">トークにメッセージを送る</button></div>
+  </div>
+</div>
+
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+  const MY_LIFF_ID = "2011848219-ZDPzGKqJ";
+  const API_URL = "https://l3ccco75yb.execute-api.ap-northeast-1.amazonaws.com/test/user";
+
+  liff.init({ liffId: MY_LIFF_ID })
+  .then(() => {
+    document.getElementById('status').innerText = 'LIFF初期化成功！';
+    if (liff.isLoggedIn()) {
+      // 1. プロフィール表示用に取得
+      liff.getProfile().then(profile => {
+        document.getElementById('displayName').innerText = profile.displayName;
+        document.getElementById('userId').innerText = profile.userId;
+        if (profile.pictureUrl) document.getElementById('pictureUrl').src = profile.pictureUrl;
+        document.getElementById('profile-container').style.display = 'block';
+
+        // 2. 起動時にIDトークンとdisplayNameをバックエンドに送信
+        const idToken = liff.getIDToken();
+        registerUserWithToken(idToken, profile.displayName, null);
+      }).catch(err => {
+        console.error('プロフィールの取得に失敗しました', err);
+      });
+
+    } else {
+      liff.login();
+    }
+  })
+  .catch(err => {
+    document.getElementById('status').innerText = `初期化失敗: ${err}`;
+  });
+
+  function registerUserWithToken(idToken, displayName, message) {
+    const apiStatus = document.getElementById('apiStatus');
+    if (!message) apiStatus.innerText = '登録中...';
+    
+    const payload = { idToken: idToken };
+    if (displayName) payload.displayName = displayName;
+    if (message) payload.message = message;
+
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTPエラー: ${response.status}`);
+      return response.json();
+    })
+    .then(result => {
+      console.log('APIレスポンス:', result);
+      let body = result.body;
+      if (typeof body === 'string') body = JSON.parse(body);
+      if (!message) {
+        apiStatus.innerText = body.success ? '登録成功' : '登録失敗';
+      }
+    })
+    .catch(error => {
+      console.error('API登録エラー:', error);
+      if (!message) apiStatus.innerText = `登録失敗: ${error.message}`;
+    });
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', () => {
+    if (!liff.isInClient()) { alert('この機能はLINEアプリ内でのみ利用できます。'); return; }
+    const textMessage = document.getElementById('messageInput').value;
+    if (!textMessage) { alert('送信するメッセージを入力してください。'); return; }
+
+    liff.sendMessages([{ type: 'text', text: textMessage }])
+    .then(() => {
+      alert('メッセージが送信されました！');
+      // メッセージ送信時にもバックエンドに内容を送信してDynamoDBを更新
+      const idToken = liff.getIDToken();
+      registerUserWithToken(idToken, null, textMessage);
+    })
+    .catch(err => alert(`メッセージ送信失敗: ${JSON.stringify(err)}`));
+  });
+</script>
 
 </body>
 </html>
-```
